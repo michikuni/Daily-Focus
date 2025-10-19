@@ -66,13 +66,16 @@ export default function HomeActivity() {
     <View style={styles.container}>
       <Text style={styles.text}>Daily Focus</Text>
 
-      <TextInput
-        placeholder="Enter your focus for today"
-        style={styles.input}
-        value={text}
-        onChangeText={setText}
-      />
-      <Button title="Save Focus" onPress={handleAdd} />
+      <View style={styles.inputContainer}>
+        <TextInput
+          placeholder="Enter your focus for today"
+          style={styles.input}
+          value={text}
+          onChangeText={setText}
+        />
+        <Button title="Save Focus" onPress={handleAdd} />
+      </View>
+
       <Text style={styles.title}>Danh sách Focus hôm nay</Text>
       <FlatList
         data={todos}
@@ -116,13 +119,21 @@ const styles = StyleSheet.create({
     textAlign: "center",
     margin: 10,
   },
+  inputContainer: {
+    flexDirection: "row", // 👈 giúp TextInput và Button nằm ngang
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginVertical: 10,
+    width: "90%",
+  },
   input: {
-    height: 40,
-    borderColor: "gray",
+    flex: 1, // 👈 chiếm phần còn lại của dòng
     borderWidth: 1,
-    marginBottom: 10,
+    borderColor: "#ccc",
+    borderRadius: 8,
     paddingHorizontal: 10,
-    width: "80%",
+    paddingVertical: 8,
+    marginRight: 10, // tạo khoảng cách với Button
   },
   title: {
     fontSize: 22,
@@ -152,12 +163,12 @@ const styles = StyleSheet.create({
   },
   todoTitle: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#000',
+    fontWeight: "500",
+    color: "#000",
   },
   todoDate: {
     fontSize: 12,
-    color: '#888',
+    color: "#888",
     marginTop: 2,
   },
   todoFlatList: {
