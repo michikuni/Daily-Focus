@@ -29,7 +29,8 @@ render.experimental.xml
 
 # Google Services (e.g. APIs or Firebase)
 google-services.json
-daily-focus\firebase\firebaseConfig.js
+# Firebase config (custom file)
+daily-focus/firebase/firebaseConfig.js
 
 # Android Profiling
 *.hprof
