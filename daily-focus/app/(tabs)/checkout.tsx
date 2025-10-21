@@ -34,7 +34,7 @@ type User = {
   createdAt?: any; // Firestore timestamp
 };
 
-export default function HomeActivity() {
+export default function CheckoutFocusActivity() {
   const [text, setText] = useState("");
   const [todos, setTodos] = useState<Todo[]>([]);
   const [users, setUsers] = useState<User[]>([]);
