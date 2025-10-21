@@ -14,7 +14,6 @@ import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { useState, useEffect } from "react";
 import { db, auth } from "../../firebase/firebaseConfig";
 import { updateTodo } from "../../firebase/updateTodo";
-import { useRouter } from "expo-router";
 
 const handleToggleDone = async (id: string, currentValue: boolean) => {
   await updateTodo(id, { done: !currentValue });
@@ -35,22 +34,16 @@ type User = {
   createdAt?: any; // Firestore timestamp
 };
 
-export default function AllFocusActivity() {
+export default function HomeActivity() {
   const [text, setText] = useState("");
   const [todos, setTodos] = useState<Todo[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const user = auth.currentUser;
 
-  const router = useRouter();
-
-  const handleGoToTabs = () => {
-    router.push('/(tabs)'); // hoặc router.replace('/(tabs)');
-  };
-
   const handleAdd = async () => {
     if (text.trim()) {
-      await addTodo(text, user?.email || "");
+      await addTodo(text);
       setText("");
     }
   };
@@ -117,7 +110,6 @@ export default function AllFocusActivity() {
       </View>
 
       <Text style={styles.title}>Danh sách Focus hôm nay</Text>
-      <Button title="Refresh" onPress={handleGoToTabs} />
       <FlatList
         data={todos}
         keyExtractor={(item) => item.id}

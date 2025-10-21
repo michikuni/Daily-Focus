@@ -2,12 +2,13 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 import Toast from "react-native-toast-message";
 
-export const addTodo = async (title) => {
+export const addTodo = async (title, email) => {
   try {
     await addDoc(collection(db, "todos"), {
       title: title,
       done: false,
       createdAt: serverTimestamp(), // dùng thời gian server
+      email: email
     });
     Toast.show({
         type: "success",

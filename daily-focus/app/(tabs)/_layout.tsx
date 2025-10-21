@@ -2,7 +2,9 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import Entypo from '@expo/vector-icons/Entypo';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -17,17 +19,24 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
       }}>
       <Tabs.Screen
-        name="index"
+        name="today"
         options={{
           title: 'Hôm nay',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="calendar.and.person" color={color} />,
+          tabBarIcon: ({ color }) => <FontAwesome5 size={24} name="calendar-day" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="checkout"
+        options={{
+          title: 'Đã hoàn thành',
+          tabBarIcon: ({ color }) => <FontAwesome size={24} name="calendar-check-o" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="index"
         options={{
           title: 'Tất cả',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          tabBarIcon: ({ color }) => <Entypo size={24} name="calendar" color={color} />,
         }}
       />
     </Tabs>
