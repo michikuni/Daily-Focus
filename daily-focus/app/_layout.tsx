@@ -19,7 +19,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen
+        {/* <Stack.Screen
           name="login-register/login-activity"
           options={{
             title: "Login",
@@ -27,12 +27,19 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="login-register/register-activity"
+          options={{
+            title: "Register",
+            presentation: "modal",
+          }}
+        /> */}
+        {/* <Stack.Screen
           name="home/home-activity"
           options={{
             title: "Home Activity",
             presentation: "modal",
         }}
-        />
+        /> */}
         <Stack.Screen
           name="(tabs)"
         />

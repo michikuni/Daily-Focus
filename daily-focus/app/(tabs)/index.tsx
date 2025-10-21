@@ -1,98 +1,218 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import {
+  Text,
+  View,
+  StyleSheet,
+  Button,
+  TextInput,
+  FlatList,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { addTodo } from "../../firebase/addTodo";
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { useState, useEffect } from "react";
+import { db, auth } from "../../firebase/firebaseConfig";
+import { updateTodo } from "../../firebase/updateTodo";
+import { useRouter } from "expo-router";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+const handleToggleDone = async (id: string, currentValue: boolean) => {
+  await updateTodo(id, { done: !currentValue });
+};
 
-export default function HomeScreen() {
+type Todo = {
+  id: string;
+  title: string;
+  done: boolean;
+  createdAt?: any; // Firestore timestamp
+};
+
+type User = {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  createdAt?: any; // Firestore timestamp
+};
+
+export default function HomeActivity() {
+  const [text, setText] = useState("");
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const user = auth.currentUser;
+
+  const router = useRouter();
+
+  const handleGoToTabs = () => {
+    router.push('/(tabs)'); // hoặc router.replace('/(tabs)');
+  };
+
+  const handleAdd = async () => {
+    if (text.trim()) {
+      await addTodo(text);
+      setText("");
+    }
+  };
+
+  useEffect(() => {
+    const q = query(collection(db, "todos"), orderBy("createdAt", "desc"));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const todoData: Todo[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<Todo, "id">),
+      }));
+
+      setTodos(todoData);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const q = query(
+      collection(db, "users")
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const userData: User[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<User, "id">),
+      }));
+
+      setUsers(userData);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const userName = () => {
+  const currentUser = users.find((u) => u.email === user?.email);
+  return currentUser ? currentUser.name : "Người dùng";
+};
+
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" />
+        <Text>Đang tải dữ liệu...</Text>
+      </View>
+    );
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome! Phương đẹp trai vl</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.text}>Xin chào! {userName()}</Text>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      <View style={styles.inputContainer}>
+        <TextInput
+          placeholder="Enter your focus for today"
+          style={styles.input}
+          value={text}
+          onChangeText={setText}
+        />
+        <Button title="Save Focus" onPress={handleAdd} />
+      </View>
+
+      <Text style={styles.title}>Danh sách Focus hôm nay</Text>
+      <Button title="Refresh" onPress={handleGoToTabs} />
+      <FlatList
+        data={todos}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            onPress={() => handleToggleDone(item.id, item.done)}
+            style={styles.todoItemContainer}
+          >
+            <View style={styles.todoTextContainer}>
+              <Text style={styles.todoTitle}>{item.title}</Text>
+              <Text style={styles.todoDate}>
+                {item.createdAt
+                  ? new Date(item.createdAt.seconds * 1000).toLocaleString()
+                  : ""}
+              </Text>
+            </View>
+            <Text style={styles.todoIcon}>{item.done ? "✅" : "⏳"}</Text>
+          </TouchableOpacity>
+        )}
+        style={styles.todoFlatList}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F5FCFF",
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  text: {
+    fontSize: 20,
+    textAlign: "center",
+    margin: 10,
+  },
+  inputContainer: {
+    flexDirection: "row", // 👈 giúp TextInput và Button nằm ngang
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginVertical: 10,
+    width: "90%",
+  },
+  input: {
+    flex: 1, // 👈 chiếm phần còn lại của dòng
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginRight: 10, // tạo khoảng cách với Button
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 20,
+    marginTop: 20,
+  },
+  todoItemContainer: {
+    backgroundColor: "#f2f2f2",
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between", // chữ bên trái, icon bên phải
+    alignItems: "center",
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+  },
+  todoTextContainer: {
+    flex: 1, // để chiếm hết chiều ngang bên trái
+  },
+  todoText: {
+    fontSize: 16,
+    flexShrink: 1, // tránh tràn text
+  },
+  todoIcon: {
+    fontSize: 16,
+  },
+  todoTitle: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#000",
+  },
+  todoDate: {
+    fontSize: 12,
+    color: "#888",
+    marginTop: 2,
+  },
+  todoFlatList: {
+    width: "90%",
   },
 });
