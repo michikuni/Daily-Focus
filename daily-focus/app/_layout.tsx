@@ -1,11 +1,12 @@
+// app/_layout.tsx
 import React, { useEffect, useState } from "react";
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import { View, ActivityIndicator } from "react-native";
+import { ThemeProvider, DarkTheme, DefaultTheme } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { auth } from "@/firebase/firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
-import { View, ActivityIndicator } from "react-native";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -15,9 +16,10 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [initialRoute, setInitialRoute] = useState<string | null>(null);
 
+  // Kiểm tra trạng thái đăng nhập Firebase khi app khởi động
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setInitialRoute(user ? "(tabs)" : "login-register/login-activity");
+      setInitialRoute(user ? "login-register/login-activity" : "(tabs)");
     });
     return unsubscribe;
   }, []);
@@ -33,7 +35,11 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }} initialRouteName={initialRoute}>
+      <Stack
+        screenOptions={{ headerShown: false }}
+        initialRouteName={initialRoute}
+      >
+        {/* Login / Register */}
         <Stack.Screen
           name="login-register/login-activity"
           options={{ title: "Login", presentation: "modal" }}
@@ -42,8 +48,11 @@ export default function RootLayout() {
           name="login-register/register-activity"
           options={{ title: "Register", presentation: "modal" }}
         />
+
+        {/* Tabs */}
         <Stack.Screen name="(tabs)" />
       </Stack>
+
       <StatusBar style="auto" />
     </ThemeProvider>
   );

@@ -5,6 +5,7 @@ import {
   Button,
   TextInput,
   FlatList,
+  Alert,
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
@@ -15,6 +16,8 @@ import { useState, useEffect } from "react";
 import { db, auth } from "../../firebase/firebaseConfig";
 import { updateTodo } from "../../firebase/updateTodo";
 import { useRouter } from "expo-router";
+import { signOut } from "firebase/auth";
+
 
 const handleToggleDone = async (id: string, currentValue: boolean) => {
   await updateTodo(id, { done: !currentValue });
@@ -44,8 +47,14 @@ export default function AllFocusActivity() {
 
   const router = useRouter();
 
-  const handleGoToTabs = () => {
-    router.push('/(tabs)'); // hoặc router.replace('/(tabs)');
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      Alert.alert("Đăng xuất thành công!");
+      router.replace('/login-register/login-activity');
+    } catch (error) {
+      Alert.alert("Lỗi đăng xuất", error.message);
+    }
   };
 
   const handleAdd = async () => {
@@ -105,7 +114,7 @@ export default function AllFocusActivity() {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.text}>Xin chào! {userName()}</Text>
-
+    <Button title="Log out" onPress={handleLogout} />
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Enter your focus for today"
@@ -117,7 +126,6 @@ export default function AllFocusActivity() {
       </View>
 
       <Text style={styles.title}>Danh sách Focus hôm nay</Text>
-      <Button title="Refresh" onPress={handleGoToTabs} />
       <FlatList
         data={todos}
         keyExtractor={(item) => item.id}
