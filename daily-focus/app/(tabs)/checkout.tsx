@@ -52,6 +52,7 @@ export default function CheckoutFocusActivity() {
     const q = query(
         collection(db, "todos"), 
         where("done", "==", true),
+        where("email", "==", user?.email || ""),
         orderBy("createdAt", "desc")
     );
 
@@ -66,7 +67,7 @@ export default function CheckoutFocusActivity() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [user?.email]);
 
   useEffect(() => {
     const q = query(

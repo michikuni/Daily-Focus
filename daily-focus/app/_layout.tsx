@@ -19,7 +19,7 @@ export default function RootLayout() {
   // Kiểm tra trạng thái đăng nhập Firebase khi app khởi động
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setInitialRoute(user ? "login-register/login-activity" : "(tabs)");
+      setInitialRoute(user ? "(tabs)" : "login-register/login-activity");
     });
     return unsubscribe;
   }, []);

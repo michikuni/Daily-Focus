@@ -8,9 +8,15 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { addTodo } from "../../firebase/addTodo";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
+  where,
+} from "firebase/firestore";
 import { useState, useEffect } from "react";
 import { db, auth } from "../../firebase/firebaseConfig";
 import { updateTodo } from "../../firebase/updateTodo";
@@ -49,7 +55,22 @@ export default function TodayFocusActivity() {
   };
 
   useEffect(() => {
-    const q = query(collection(db, "todos"), orderBy("createdAt", "desc"));
+    const today = new Date();
+
+  // Đầu ngày (00:00:00)
+  const start = new Date(today);
+  start.setHours(0, 0, 0, 0);
+
+  // Cuối ngày (23:59:59)
+  const end = new Date(today);
+  end.setHours(23, 59, 59, 999);
+    const q = query(
+      collection(db, "todos"),
+      where("email", "==", user?.email || ""),
+      where("createdAt", ">=", start),
+      where("createdAt", "<=", end),
+      orderBy("createdAt", "desc")
+    );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const todoData: Todo[] = snapshot.docs.map((doc) => ({
@@ -62,12 +83,10 @@ export default function TodayFocusActivity() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [user?.email]);
 
   useEffect(() => {
-    const q = query(
-      collection(db, "users")
-    );
+    const q = query(collection(db, "users"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const userData: User[] = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -81,10 +100,9 @@ export default function TodayFocusActivity() {
   }, []);
 
   const userName = () => {
-  const currentUser = users.find((u) => u.email === user?.email);
-  return currentUser ? currentUser.name : "Người dùng";
-};
-
+    const currentUser = users.find((u) => u.email === user?.email);
+    return currentUser ? currentUser.name : "Người dùng";
+  };
 
   if (loading) {
     return (

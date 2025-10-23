@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { addTodo } from "../../firebase/addTodo";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, where } from "firebase/firestore";
 import { useState, useEffect } from "react";
 import { db, auth } from "../../firebase/firebaseConfig";
 import { updateTodo } from "../../firebase/updateTodo";
@@ -48,13 +48,9 @@ export default function AllFocusActivity() {
   const router = useRouter();
 
   const handleLogout = async () => {
-    try {
       await signOut(auth);
       Alert.alert("Đăng xuất thành công!");
       router.replace('/login-register/login-activity');
-    } catch (error) {
-      Alert.alert("Lỗi đăng xuất", error.message);
-    }
   };
 
   const handleAdd = async () => {
@@ -65,7 +61,11 @@ export default function AllFocusActivity() {
   };
 
   useEffect(() => {
-    const q = query(collection(db, "todos"), orderBy("createdAt", "desc"));
+    const q = query(
+      collection(db, "todos"),
+      where("email", "==", user?.email || ""),
+      orderBy("createdAt", "desc")
+    );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const todoData: Todo[] = snapshot.docs.map((doc) => ({
@@ -78,7 +78,7 @@ export default function AllFocusActivity() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [user?.email]);
 
   useEffect(() => {
     const q = query(
