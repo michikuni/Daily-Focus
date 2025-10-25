@@ -1,7 +1,11 @@
 // app/_layout.tsx
 import React, { useEffect, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
-import { ThemeProvider, DarkTheme, DefaultTheme } from "@react-navigation/native";
+import {
+  ThemeProvider,
+  DarkTheme,
+  DefaultTheme,
+} from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -19,8 +23,15 @@ export default function RootLayout() {
   // Kiểm tra trạng thái đăng nhập Firebase khi app khởi động
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setInitialRoute(user ? "(tabs)" : "login-register/login-activity");
+      if (user === undefined || user === null) {
+        // Không có user đăng nhập
+        setInitialRoute("login-register/login-activity");
+      } else {
+        // Có user đăng nhập
+        setInitialRoute("(tabs)");
+      }
     });
+
     return unsubscribe;
   }, []);
 

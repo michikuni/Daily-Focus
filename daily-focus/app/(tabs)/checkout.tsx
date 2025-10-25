@@ -2,15 +2,18 @@ import {
   Text,
   View,
   StyleSheet,
-  Button,
-  TextInput,
   FlatList,
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { addTodo } from "../../firebase/addTodo";
-import { collection, onSnapshot, query, orderBy, where } from "firebase/firestore";
+import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
+  where,
+} from "firebase/firestore";
 import { useState, useEffect } from "react";
 import { db, auth } from "../../firebase/firebaseConfig";
 import { updateTodo } from "../../firebase/updateTodo";
@@ -26,34 +29,17 @@ type Todo = {
   createdAt?: any; // Firestore timestamp
 };
 
-type User = {
-  id: string;
-  name: string;
-  phone: string;
-  email: string;
-  createdAt?: any; // Firestore timestamp
-};
-
 export default function CheckoutFocusActivity() {
-  const [text, setText] = useState("");
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const user = auth.currentUser;
 
-  const handleAdd = async () => {
-    if (text.trim()) {
-      await addTodo(text);
-      setText("");
-    }
-  };
-
   useEffect(() => {
     const q = query(
-        collection(db, "todos"), 
-        where("done", "==", true),
-        where("email", "==", user?.email || ""),
-        orderBy("createdAt", "desc")
+      collection(db, "todos"),
+      where("done", "==", true),
+      where("email", "==", user?.email || ""),
+      orderBy("createdAt", "desc")
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -69,28 +55,6 @@ export default function CheckoutFocusActivity() {
     return () => unsubscribe();
   }, [user?.email]);
 
-  useEffect(() => {
-    const q = query(
-      collection(db, "users")
-    );
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const userData: User[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Omit<User, "id">),
-      }));
-
-      setUsers(userData);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const userName = () => {
-  const currentUser = users.find((u) => u.email === user?.email);
-  return currentUser ? currentUser.name : "Người dùng";
-};
-
-
   if (loading) {
     return (
       <View style={styles.center}>
@@ -102,19 +66,7 @@ export default function CheckoutFocusActivity() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.text}>Xin chào! {userName()}</Text>
-
-      <View style={styles.inputContainer}>
-        <TextInput
-          placeholder="Enter your focus for today"
-          style={styles.input}
-          value={text}
-          onChangeText={setText}
-        />
-        <Button title="Save Focus" onPress={handleAdd} />
-      </View>
-
-      <Text style={styles.title}>Danh sách Focus hôm nay</Text>
+      <Text style={styles.title}>Danh sách Focus đã hoàn thành</Text>
       <FlatList
         data={todos}
         keyExtractor={(item) => item.id}

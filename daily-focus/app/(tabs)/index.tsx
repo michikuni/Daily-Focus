@@ -5,19 +5,23 @@ import {
   Button,
   TextInput,
   FlatList,
-  Alert,
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { addTodo } from "../../firebase/addTodo";
-import { collection, onSnapshot, query, orderBy, where } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
+  where,
+} from "firebase/firestore";
 import { useState, useEffect } from "react";
 import { db, auth } from "../../firebase/firebaseConfig";
 import { updateTodo } from "../../firebase/updateTodo";
 import { useRouter } from "expo-router";
 import { signOut } from "firebase/auth";
-
 
 const handleToggleDone = async (id: string, currentValue: boolean) => {
   await updateTodo(id, { done: !currentValue });
@@ -47,10 +51,11 @@ export default function AllFocusActivity() {
 
   const router = useRouter();
 
+  const logInOutText = user ? "Log out" : "Log in";
+
   const handleLogout = async () => {
-      await signOut(auth);
-      Alert.alert("Đăng xuất thành công!");
-      router.replace('/login-register/login-activity');
+    await signOut(auth);
+    router.replace("/login-register/login-activity");
   };
 
   const handleAdd = async () => {
@@ -81,9 +86,7 @@ export default function AllFocusActivity() {
   }, [user?.email]);
 
   useEffect(() => {
-    const q = query(
-      collection(db, "users")
-    );
+    const q = query(collection(db, "users"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const userData: User[] = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -97,10 +100,9 @@ export default function AllFocusActivity() {
   }, []);
 
   const userName = () => {
-  const currentUser = users.find((u) => u.email === user?.email);
-  return currentUser ? currentUser.name : "Người dùng";
-};
-
+    const currentUser = users.find((u) => u.email === user?.email);
+    return currentUser ? currentUser.name : "Người dùng";
+  };
 
   if (loading) {
     return (
@@ -113,8 +115,11 @@ export default function AllFocusActivity() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.text}>Xin chào! {userName()}</Text>
-    <Button title="Log out" onPress={handleLogout} />
+      <View style={styles.inputContainer}>
+        <Text style={styles.text}>Xin chào! {userName()}</Text>
+        <Button title={logInOutText} onPress={handleLogout} />
+      </View>
+
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Enter your focus for today"
@@ -125,7 +130,7 @@ export default function AllFocusActivity() {
         <Button title="Save Focus" onPress={handleAdd} />
       </View>
 
-      <Text style={styles.title}>Danh sách Focus hôm nay</Text>
+      <Text style={styles.title}>Tất cả Focus</Text>
       <FlatList
         data={todos}
         keyExtractor={(item) => item.id}
